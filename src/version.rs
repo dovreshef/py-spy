@@ -1,6 +1,6 @@
-use lazy_static::lazy_static;
-use regex::bytes::Regex;
+use std::sync::LazyLock;
 
+use regex::bytes::Regex;
 use anyhow::Error;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -14,12 +14,12 @@ pub struct Version {
 
 impl Version {
     pub fn scan_bytes(data: &[u8]) -> Result<Version, Error> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
+        static RE: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(
                 r"((2|3)\.(3|4|5|6|7|8|9|10|11)\.(\d{1,2}))((a|b|c|rc)\d{1,2})?(\+(?:[0-9a-z-]+(?:[.][0-9a-z-]+)*)?)? (.{1,64})"
             )
-            .unwrap();
-        }
+            .unwrap()
+        });
 
         if let Some(cap) = RE.captures_iter(data).next() {
             let release = match cap.get(5) {

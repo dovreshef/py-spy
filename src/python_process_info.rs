@@ -6,9 +6,10 @@ use std::collections::HashMap;
 use std::mem::size_of;
 use std::path::Path;
 use std::slice;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use anyhow::{Context, Error, Result};
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 use proc_maps::{get_process_maps, MapRange};
 use remoteprocess::{Pid, ProcessMemory};
 
@@ -571,20 +572,19 @@ pub fn get_threadstate_address(
 }
 
 fn error_if_gil(config: &Config, version: &Version, msg: &str) -> Result<(), Error> {
-    lazy_static! {
-        static ref WARNED: std::sync::atomic::AtomicBool =
-            std::sync::atomic::AtomicBool::new(false);
-    }
+    static WARNED: LazyLock<AtomicBool> = LazyLock::new(|| {
+        AtomicBool::new(false)
+    });
 
     if config.gil_only {
-        if !WARNED.load(std::sync::atomic::Ordering::Relaxed) {
+        if !WARNED.load(Ordering::Relaxed) {
             // only print this once
             eprintln!(
                 "Cannot detect GIL holding in version '{}' on the current platform (reason: {})",
                 version, msg
             );
             eprintln!("Please open an issue in https://github.com/benfred/py-spy with the Python version and your platform.");
-            WARNED.store(true, std::sync::atomic::Ordering::Relaxed);
+            WARNED.store(true, Ordering::Relaxed);
         }
         Err(format_err!(
             "Cannot detect GIL holding in version '{}' on the current platform (reason: {})",
@@ -659,28 +659,28 @@ pub fn get_windows_python_symbols(
 
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 pub fn is_python_lib(pathname: &str) -> bool {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"/libpython\d.\d\d?(m|d|u)?.so").unwrap();
-    }
+    static RE: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r"/libpython\d.\d\d?(m|d|u)?.so").unwrap()
+    });
     RE.is_match(pathname)
 }
 
 #[cfg(target_os = "macos")]
 pub fn is_python_lib(pathname: &str) -> bool {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"/libpython\d.\d\d?(m|d|u)?.(dylib|so)$").unwrap();
-    }
+    static RE: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(r"/libpython\d.\d\d?(m|d|u)?.(dylib|so)$").unwrap()
+    });
     RE.is_match(pathname) || is_python_framework(pathname)
 }
 
 #[cfg(windows)]
 pub fn is_python_lib(pathname: &str) -> bool {
-    lazy_static! {
-        static ref RE: Regex = RegexBuilder::new(r"\\python\d\d\d?(m|d|u)?.dll$")
+    static RE: LazyLock<Regex> = LazyLock::new(|| {
+        RegexBuilder::new(r"\\python\d\d\d?(m|d|u)?.dll$")
             .case_insensitive(true)
             .build()
-            .unwrap();
-    }
+            .unwrap()
+    });
     RE.is_match(pathname)
 }
 

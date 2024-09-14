@@ -3,7 +3,6 @@ use std::collections::HashSet;
 use std::num::NonZeroUsize;
 
 use cpp_demangle::{BorrowedSymbol, DemangleOptions};
-use lazy_static::lazy_static;
 use lru::LruCache;
 use remoteprocess::{self, Pid};
 
@@ -206,9 +205,8 @@ impl NativeStack {
                 // We want to include some internal python functions. For example, calls like time.sleep
                 // or os.kill etc are implemented as builtins in the interpreter and filtering them out
                 // is misleading. Create a set of whitelisted python function prefixes to include
-                lazy_static! {
-                    static ref WHITELISTED_PREFIXES: HashSet<&'static str> = {
-                        let mut prefixes = HashSet::new();
+                static WHITELISTED_PREFIXES: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+                    let mut prefixes = HashSet::new();
                         prefixes.insert("time");
                         prefixes.insert("sys");
                         prefixes.insert("gc");
@@ -222,8 +220,7 @@ impl NativeStack {
                         prefixes.insert("PyThread");
                         prefixes.insert("lock");
                         prefixes
-                    };
-                }
+                });
 
                 // Figure out the merge type by looking at the function name, frames that
                 // are used in evaluating python code are ignored, aside from PyEval_EvalFrame*

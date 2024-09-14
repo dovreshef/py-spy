@@ -2,7 +2,6 @@ use regex::Regex;
 use std::collections::{BTreeMap, HashMap};
 
 use anyhow::Error;
-use lazy_static::lazy_static;
 
 use crate::stack_trace::Frame;
 use crate::utils::resolve_filename;
@@ -78,9 +77,9 @@ impl SourceMap {
         cpp_filename: &str,
         module: &Option<String>,
     ) -> Result<SourceMap, Error> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r#"^\s*/\* "(.+\..+)":([0-9]+)"#).unwrap();
-        }
+        static RE: LazyLock<Regex> = LazyLock::new(|| {
+            Regex::new(r#"^\s*/\* "(.+\..+)":([0-9]+)"#).unwrap()
+        });
 
         let mut lookup = BTreeMap::new();
         let mut resolved: HashMap<String, String> = HashMap::new();
