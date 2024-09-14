@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::collections::{BTreeMap, HashMap};
+use std::sync::LazyLock;
 
 use anyhow::Error;
 

@@ -1,7 +1,8 @@
-use anyhow::Error;
 use std::collections::HashSet;
 use std::num::NonZeroUsize;
+use std::sync::LazyLock;
 
+use anyhow::Error;
 use cpp_demangle::{BorrowedSymbol, DemangleOptions};
 use lru::LruCache;
 use remoteprocess::{self, Pid};

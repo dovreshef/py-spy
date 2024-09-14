@@ -11,7 +11,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use anyhow::{Context, Error, Result};
 use std::sync::LazyLock;
 use proc_maps::{get_process_maps, MapRange};
-use remoteprocess::{Pid, ProcessMemory};
+use remoteprocess::ProcessMemory;
 
 use crate::binary_parser::{parse_binary, BinaryInfo};
 use crate::config::Config;
@@ -616,7 +616,7 @@ impl ContainsAddr for Vec<MapRange> {
 }
 
 #[cfg(target_os = "linux")]
-fn is_dockerized(pid: Pid) -> Result<bool, Error> {
+fn is_dockerized(pid: remoteprocess::Pid) -> Result<bool, Error> {
     let self_mnt = std::fs::read_link("/proc/self/ns/mnt")?;
     let target_mnt = std::fs::read_link(format!("/proc/{}/ns/mnt", pid))?;
     Ok(self_mnt != target_mnt)

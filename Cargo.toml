@@ -8,13 +8,13 @@ description = "Sampling profiler for Python programs "
 readme = "README.md"
 exclude = ["images/*", "test_programs/*"]
 license = "MIT"
-build="build.rs"
-edition="2021"
+build = "build.rs"
+edition = "2021"
 
 [dependencies]
 anyhow = "1"
 clap = {version="4.5.17", features=["wrap_help", "cargo", "derive"]}
-clap_complete="4.5.26"
+clap_complete = "4.5.26"
 console = "0.15.8"
 ctrlc = "3.4.5"
 indicatif = "0.17.8"
@@ -34,7 +34,7 @@ serde_derive = "1.0.210"
 serde_json = "1.0.128"
 rand = "0.8.5"
 rand_distr = "0.4.3"
-remoteprocess = {version="0.4.12", features=["unwind"]}
+remoteprocess = {version = "0.4.12", features = ["unwind"] }
 chrono = "0.4.26"
 
 [dev-dependencies]
@@ -45,3 +45,6 @@ termios = "0.3.3"
 
 [target.'cfg(windows)'.dependencies]
 winapi = {version = "0.3.9", features = ["winbase", "consoleapi", "wincon", "handleapi", "timeapi", "processenv" ]}
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(unwind)'] }

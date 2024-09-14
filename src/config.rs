@@ -507,6 +507,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::bool_assert_comparison)]
     fn test_parse_record_args() {
         // basic use case
         let config = get_config("py-spy record --pid 1234 --output foo").unwrap();
